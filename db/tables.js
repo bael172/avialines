@@ -1,47 +1,115 @@
 const {Sequelize , DataTypes, Model} = require('sequelize')
 const sequelize = require('./db_connect')
 
-/*
-class User extends Model {}
-User.init
-*/
-const User = sequelize.define('user',
+const Passenger = sequelize.define('passenger',
 {
-    id_user:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    passport:{type:DataTypes.STRING, allowNull:false},
+    surname:{type:DataTypes.STRING, allowNull:false},
     name:{type:DataTypes.STRING, allowNull:false},
-    email:{type:DataTypes.STRING, allowNull:false},
-    passwd:{type:DataTypes.STRING,allowNull:false},
-    phone:{type:DataTypes.STRING,},
-    role:{type:DataTypes.STRING, defaultValue:"client"}
+    lastname:{type:DataTypes.STRING},
+    birthday:{type:DataTypes.STRING,},
+    country_origin:{type:DataTypes.STRING},
+    citizen_of:{type:DataTypes.STRING}
 })
-/*{
-    sequelize, 
-    modelName:'User',
-    tableName:'user'
-})*/
-/*
-class Course extends Model{}
-Course.init
-*/
-const Course = sequelize.define('course',
-{
-    id_course:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    name:{type:DataTypes.STRING, allowNull:false},
-    cost:{type:DataTypes.DECIMAL(10,2), allowNull:false},
-    period_days:{type:DataTypes.INTEGER, allowNull:false},
-    lesson_count:{type:DataTypes.INTEGER, allowNull:false},
-    description:{type:DataTypes.STRING, allowNull:false}
-})
-/*{
-    sequelize,
-    modelName:'Course',
-    tableName:'course'
-})*/
 
-User.belongsTo(Course)
-Course.hasMany(User)
+const Ticket = sequelize.define('ticket',
+{
+    id_ticket:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    flight:{type:DataTypes.STRING, allowNull:false, references:{
+        model:'flights',
+        key:'flight_number'
+    }},
+    id_passenger:{type:DataTypes.INTEGER, allowNull:false, references:{
+        model:'passengers',
+        key:'id'
+    }},
+    seat:{type:DataTypes.STRING},
+    luggage_places:{type:DataTypes.INTEGER},
+    luggage_weight_kg:{type:DataTypes.INTEGER},
+    ticket_cost:{type:DataTypes.INTEGER,allowNull:false}
+})
+
+const Crew = sequelize.define('crew',
+{
+    employee_id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    passport:{type:DataTypes.STRING, allowNull:false},
+    surname:{type:DataTypes.STRING, allowNull:false},
+    name:{type:DataTypes.STRING, allowNull:false},
+    lastname:{type:DataTypes.STRING},
+    position:{type:DataTypes.STRING},
+    birthday:{type:DataTypes.STRING},
+    status:{type:DataTypes.STRING}
+})
+
+const Point = sequelize.define('point',
+{
+    point_id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+    name:{type:DataTypes.STRING},
+    country:{type:DataTypes.STRING},
+    airport:{type:DataTypes.STRING},
+}
+)
+
+const Flight = sequelize.define('flight',
+{
+    flight_number:{type:DataTypes.STRING},
+    id_plane:{type:DataTypes.INTEGER, references:{
+        model:'planes',
+        key:'id'
+    }},
+    ticket_reg_time:{type:DataTypes.TIME},
+
+    boarding_start:{type:DataTypes.TIME},
+    boarding_end:{type:DataTypes.TIME},
+
+    departure_point_id:{type:DataTypes.INTEGER, allowNull:false, references:{
+        model:'points',
+        key:'point_id'
+    }},
+    departure_date:{type:DataTypes.DATE},
+    departure_time:{type:DataTypes.TIME},
+
+    flight_duartion:{type:DataTypes.STRING},
+
+    destination_point_id:{type:DataTypes.INTEGER, allowNull:false, references:{
+        model:'points',
+        key:'point_id'
+    }},
+    arrival_date:{type:DataTypes.DATE},
+    arrival_time:{type:DataTypes.TIME},
+    
+    reserved_seats_quantity:{type:DataTypes.INTEGER,allowNull:false},
+    status:{type:DataTypes.STRING}
+})
+
+const Crew_Flight = sequelize.define('crew_flight',
+{
+    flight_number:{type:DataTypes.INTEGER, primaryKey:true, references:{
+        model:'flights',
+        key:'flight_number'
+    }},
+    employee_id:{type:DataTypes.INTEGER, primaryKey:true, references:{
+        model:'crews',
+        key:'employee_id'
+    }}
+})
+
+const Plane = sequelize.define('plane',
+{
+    id:{type:DataTypes.STRING, primaryKey:true},
+    type:{type:DataTypes.STRING},
+    name:{type:DataTypes.STRING, allowNull:false}, 
+    seats_number:{type:DataTypes.INTEGER,allowNull:false},
+    classes:{type:DataTypes.STRING,defaultValue:"econom"},
+    airline:{type:DataTypes.STRING},
+    toilets_number:{type:DataTypes.INTEGER,allowNull:false},
+    entries_number:{type:DataTypes.INTEGER,allowNull:false},
+    fueltank_capacity:{type:DataTypes.INTEGER,allowNull:false},
+    current_fuel_level:{type:DataTypes.INTEGER},
+    status:{type:DataTypes.STRING}
+})
 
 module.exports = {
-    User,
-    Course
+    Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane
 }

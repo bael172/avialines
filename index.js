@@ -5,7 +5,6 @@ const Sequelize = require('sequelize')
 const sequelize = require('./db/db_connect')
 const tables = require('./db/tables')
 const router = require('./routes/index')
-const cors = require('cors')
 
 const PORT=process.env.PORT || 5000
 
