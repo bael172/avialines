@@ -105,6 +105,7 @@ const Plane = sequelize.define('plane',
     airline:{type:DataTypes.STRING},
     toilets_number:{type:DataTypes.INTEGER,allowNull:false},
     entries_number:{type:DataTypes.INTEGER,allowNull:false},
+    laggage_capacity:{type:DataTypes.INTEGER,allowNull:false},
     fueltank_capacity:{type:DataTypes.INTEGER,allowNull:false},
     current_fuel_level:{type:DataTypes.INTEGER},
     status:{type:DataTypes.STRING}

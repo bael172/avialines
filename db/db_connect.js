@@ -11,11 +11,3 @@ module.exports = new Sequelize(
         port: process.env.DB_PORT,
     }
 )
-/*
-const {Sequelize , DataTypes} = require('sequelize');
-const sequelize = new Sequelize('rest 2','postgres','0000',
-{
-    host:'localhost',
-    dialect:'postgres'
-})
-*/

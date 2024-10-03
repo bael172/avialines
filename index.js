@@ -1,10 +1,9 @@
 const express = require("express")
 require('dotenv').config({path:'./db/.env'})
 
-const Sequelize = require('sequelize')
 const sequelize = require('./db/db_connect')
 const tables = require('./db/tables')
-const router = require('./routes/index')
+//const router = require('./routes/index')
 
 const PORT=process.env.PORT || 5000
 
@@ -20,7 +19,7 @@ app.get('/msg',(req,res) => {
         try{
             await sequelize.authenticate()
             await sequelize.sync()
-            console.log('Connection has been established successfully');
+            console.log('Connection to the DB has been established successfully');
             app.listen(PORT,() => console.log(`Server start on ${PORT}`))
         }
         catch (error) {
