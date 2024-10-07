@@ -16,7 +16,7 @@ const Passenger = sequelize.define('passenger',
 const Ticket = sequelize.define('ticket',
 {
     id_ticket:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    flight:{type:DataTypes.STRING, allowNull:false, references:{
+    flight_number:{type:DataTypes.STRING, allowNull:false, references:{
         model:'flights',
         key:'flight_number'
     }},
@@ -85,7 +85,7 @@ const Flight = sequelize.define('flight',
 
 const Crew_Flight = sequelize.define('crew_flight',
 {
-    flight_number:{type:DataTypes.INTEGER, primaryKey:true, references:{
+    flight_number:{type:DataTypes.STRING, primaryKey:true, references:{
         model:'flights',
         key:'flight_number'
     }},
@@ -97,7 +97,7 @@ const Crew_Flight = sequelize.define('crew_flight',
 
 const Plane = sequelize.define('plane',
 {
-    id:{type:DataTypes.STRING, primaryKey:true},
+    id:{type:DataTypes.INTEGER, primaryKey:true},
     type:{type:DataTypes.STRING},
     name:{type:DataTypes.STRING, allowNull:false}, 
     seats_number:{type:DataTypes.INTEGER,allowNull:false},
@@ -110,6 +110,12 @@ const Plane = sequelize.define('plane',
     current_fuel_level:{type:DataTypes.INTEGER},
     status:{type:DataTypes.STRING}
 })
+
+Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
+Crew.belongsToMany(Flight,{through:'Crew_Flight'})
+Flight.hasMany(Ticket, {foreignKey:'flight_number'})
+Plane.hasMany(Flight,{foreignKey:'id_plane'})
+Point.hasMany(Flight,{foreignKey:['departure_point_id','destination_point_id']})
 
 module.exports = {
     Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane
