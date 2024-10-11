@@ -4,8 +4,14 @@ const router = new Router()
 const passenger = require("../queries/passenger")
 
 router.post("/add",passenger)
-router.patch("/edit/id",passenger)
-router.patch("/edit/body",passenger)
-router.get("/due_id",passenger)
-router.get("/due_body",passenger)
-router.get("/all",passenger)
+
+router.patch("/edit/due_id/:id",passenger)
+router.patch("/edit/due_passport/:passport",passenger)
+
+router.get("/get/due_id/:id",passenger)
+router.get("/get/due_body",passenger)
+router.get("/getAll",passenger)
+
+router.delete("/delete_due_id/:id",passenger)
+
+module.exports = router

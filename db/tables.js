@@ -4,7 +4,7 @@ const sequelize = require('./db_connect')
 const Passenger = sequelize.define('passenger',
 {
     id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    passport:{type:DataTypes.STRING, allowNull:false},
+    passport:{type:DataTypes.STRING, allowNull:false, unique:true},
     surname:{type:DataTypes.STRING, allowNull:false},
     name:{type:DataTypes.STRING, allowNull:false},
     lastname:{type:DataTypes.STRING},
@@ -33,7 +33,7 @@ const Ticket = sequelize.define('ticket',
 const Crew = sequelize.define('crew',
 {
     employee_id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    passport:{type:DataTypes.STRING, allowNull:false},
+    passport:{type:DataTypes.STRING, allowNull:false, unique:true},
     surname:{type:DataTypes.STRING, allowNull:false},
     name:{type:DataTypes.STRING, allowNull:false},
     lastname:{type:DataTypes.STRING},
@@ -53,7 +53,7 @@ const Point = sequelize.define('point',
 
 const Flight = sequelize.define('flight',
 {
-    flight_number:{type:DataTypes.STRING},
+    flight_number:{type:DataTypes.STRING, primaryKey:true},
     id_plane:{type:DataTypes.INTEGER, references:{
         model:'planes',
         key:'id'
@@ -99,7 +99,7 @@ const Plane = sequelize.define('plane',
 {
     id:{type:DataTypes.INTEGER, primaryKey:true},
     type:{type:DataTypes.STRING},
-    name:{type:DataTypes.STRING, allowNull:false}, 
+    name:{type:DataTypes.STRING, allowNull:false, unique:true}, 
     seats_number:{type:DataTypes.INTEGER,allowNull:false},
     classes:{type:DataTypes.STRING,defaultValue:"econom"},
     airline:{type:DataTypes.STRING},
