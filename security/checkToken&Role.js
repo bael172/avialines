@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-module.exports = function(role1,role2) {
+module.exports = function(role1) {
     return function (req,res,next) {
         if(req.method === "OPTIONS") {
             next()
@@ -12,7 +12,7 @@ module.exports = function(role1,role2) {
             }
             const decoded = jwt.verify(token, process.env.SECRET_KEY)
             //в decoded выписывается запись из таблицы User которая вычилс-ся по токену
-            if(decoded.role !== role1 && decoded.role !== role2) {
+            if(decoded.role !== role1) {
                 return res.status(403).json({message:"У вас нет доступа"})
             }
             req.user = decoded

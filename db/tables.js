@@ -111,6 +111,20 @@ const Plane = sequelize.define('plane',
     status:{type:DataTypes.STRING}
 })
 
+const User = sequelize.define('user',
+{
+    id:{type:DataTypes.INTEGER, primaryKey:true},
+    login:{type:DataTypes.STRING, allowNull:false},
+    password:{type:DataTypes.STRING, allowNull:false},
+    role:{type:DataTypes.STRING, defaultValue:"worker"},
+    passport:{type:DataTypes.STRING, allowNull:false},
+    position:{type:DataTypes.STRING},
+    surname:{type:DataTypes.STRING},
+    name:{type:DataTypes.STRING},
+    lastname:{type:DataTypes.STRING},
+    birthday:{type:DataTypes.DATE},
+})
+
 Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
 Crew.belongsToMany(Flight,{through:'Crew_Flight'})
 Flight.hasMany(Ticket, {foreignKey:'flight_number'})
@@ -118,5 +132,5 @@ Plane.hasMany(Flight,{foreignKey:'id_plane'})
 Point.hasMany(Flight,{foreignKey:['departure_point_id','destination_point_id']})
 
 module.exports = {
-    Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane
+    Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane, User
 }
