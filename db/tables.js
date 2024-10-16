@@ -9,8 +9,8 @@ const Passenger = sequelize.define('passenger',
     name:{type:DataTypes.STRING, allowNull:false},
     lastname:{type:DataTypes.STRING},
     birthday:{type:DataTypes.STRING,},
-    country_origin:{type:DataTypes.STRING},
-    citizen_of:{type:DataTypes.STRING}
+    country_origin:{type:DataTypes.STRING, allowNull:false},
+    citizen_of:{type:DataTypes.STRING, allowNull:false}
 })
 
 const Ticket = sequelize.define('ticket',
@@ -113,16 +113,16 @@ const Plane = sequelize.define('plane',
 
 const User = sequelize.define('user',
 {
-    id:{type:DataTypes.INTEGER, primaryKey:true},
+    id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
     login:{type:DataTypes.STRING, allowNull:false, unique:true},
-    passwd:{type:DataTypes.STRING, allowNull:false},
-    role:{type:DataTypes.STRING, defaultValue:"worker"},
-    passport:{type:DataTypes.STRING, allowNull:false},
-    position:{type:DataTypes.STRING},
     surname:{type:DataTypes.STRING},
     name:{type:DataTypes.STRING},
     lastname:{type:DataTypes.STRING},
+    passport:{type:DataTypes.STRING, allowNull:false},
+    role:{type:DataTypes.STRING, defaultValue:"worker"},
+    position:{type:DataTypes.STRING},
     birthday:{type:DataTypes.DATE},
+    passwd:{type:DataTypes.STRING, allowNull:false},
 })
 
 Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})

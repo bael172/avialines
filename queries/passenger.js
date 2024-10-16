@@ -4,9 +4,10 @@ const {Op} = require("sequelize")
 
 class Passajir{
     async add(req,res,next){
+        /*
         if((req.body).entries.length==0) res.status(401).send("Добавьте свойства в запрос")
         const {id, passport : req_passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
-        let string_required_keys = "id passport surname name lastname birthday country_origin citizen_of"
+        let string_required_keys = "passport surname name lastname birthday country_origin citizen_of"
         let array_required_keys = string_required_keys.split(" ")
         let attributes_length = array_required_keys.length
         if(attributes_length < 8) res.status(401).json({message:"Не хватает аттрибутов"})
@@ -16,33 +17,40 @@ class Passajir{
                 continue
             else res.status(401).json({message:"Вы не правильно написали название атрибутов"})
         }
-        const amigo = await Passenger.findOne({where: passport = req_passport})
+        */
+        const {passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
+        const amigo = await Passenger.findOne({where:{passport}})
         if(amigo == null){
-            await Passenger.create({id,passport,surname,name,lastname,birthday,country_origin,citizen_of})
+            await Passenger.create({passport,surname,name,lastname,birthday,country_origin,citizen_of}).then(response => res.json(response))
         }
-        else req.status(401).json({message:"Пассажир с таким паспортом уже существует"})
+        else res.status(401).json({message:"Пассажир с таким паспортом уже существует"})
     }
-    async edit_id(req,res,next){
+    async edit_due_id(req,res,next){
         const {id, passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
-        if(req.user.id = req.params.id){
-            await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
-                where:{
-                    id:req.params.id
-                }
-            })
-        }
+        await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
+            where:{
+                id:req.params.id
+            }
+        })
+        await Passenger.findByPk(req.params.id).then(response => res.json(response))
     }
-    async edit_passport(req,res,next){
+    async edit_due_passport(req,res,next){
         const {id, passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
-            await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
-                where:{
-                    id:req.params.passport
-                }
-            })
-        }
+        await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
+            where:{
+                passport:req.params.passport
+            }
+        })
+        await Passenger.findOne({where:{passport:req.params.passport}}).then(response => res.json(response))
+    }
     async get_due_id(req,res,next){
-        const passenger = await Passenger.findOne({where:{id:req.params.id}})
+        const passenger = await Passenger.findByPk(req.params.id)
         if(passenger == null) res.status(401).json({message:`Пассажир с id = ${req.params.id} не найден`})
+        else res.json(passenger)
+    }
+    async get_due_passport(req,res,next){
+        const passenger = await Passenger.findOne({where:{passport:req.params.passport}})
+        if(passenger == null) res.status(401).json({message:`Пассажир с паспортом = ${req.params.passport} не найден`})
         else res.json(passenger)
     }
     async get_due_body(req,res,next){
@@ -62,9 +70,11 @@ class Passajir{
         res.json(all)
     }
     async delete_due_id(req,res,next){
-        await Passenger.destroy({
-            where:{id:req.params.id}
-        }).then(response => req.send(response))
+        const target = await Passenger.findByPk(req.params.id)
+        if(!target) return res.status(400).json({message:`Записи с id = ${req.params.id} не обнаружено`})
+        await target.destroy()
+        .then((rowsDestroyed)=>rowsDestroyed? res.send("Удалено") : res.send("Не удалено"))
+        return 
     }
 }
 module.exports = new Passajir()

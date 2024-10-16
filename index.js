@@ -12,7 +12,7 @@ const app=express()
 app.use(cors())
 app.use(express.json())
 
-app.use('/queries',router)
+app.use('/query',router)
 
 app.get('/msg',(req,res) => { 
     res.status(200).json({message:"Working"})
@@ -20,7 +20,7 @@ app.get('/msg',(req,res) => {
     const start = async()=> {
         try{
             await sequelize.authenticate()
-            await sequelize.sync()
+            await sequelize.sync({alter:true})
             console.log('Connection to the DB has been established successfully');
             app.listen(PORT,() => console.log(`Server start on ${PORT}`))
         }
