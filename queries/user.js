@@ -6,82 +6,51 @@ const {Op} = require("sequelize")
 
 require("dotenv").config({path:"./db/.env"})
 
-const generateJwt = (id,name,email,phone,role) => {
+const generateJwt = (id,passport,login,surname,name) => {
     return jwt.sign(
-        {id,name,email,phone,role},
+        {id,passport,login,surname,name},
         process.env.SECRET_KEY,
         {expiresIn:'24h'}
     )
 }
 
-class AuthController{
+class Person{
     async registration(req, res, next){
         const {passport, surname, name, lastname, login, passwd, passwdAgain, position, birthday, role} = req.body
-        if(!(email && passwd)||!(phone && passwd)) {
-            res.status(401).json({message:'Введите эл.почту или телефон и придумайте пароль'})
-            //return next(ApiError.badRequest('Введите эл.почту, телефон и придумайте пароль'))
-            return
-        }
-        if(!passwdAgain){
-            res.status(402).json({message:'Введите пароль еще раз'})
-            //return next(ApiError.badRequest('Введите пароль еще раз'))
-            return
-        }
-        if(passwd!==passwdAgain){
-            res.status(403).json({message:'Пароли не совпадают'})
-            //return next(ApiError.badRequest('Пароли не совпадают'))
-            return
-        }
-        const obj = {email,phone}
-        let condition = []
-        console.log("Свойства объекта:",Object.entries(obj))
-        condition = Object.entries(obj).reduce((accum,[key,value])=>{
-            if(value){  //запись в условие значений не являющихся null или undefined
-                accum[key]=value
-                console.log("accum[key]=",accum[key])
-                console.log("value=",value)
-            }
-            console.log("accum=",accum)
-            return accum
-        },{}) //используем объект как первичное значение accum
-        for(let value of condition){
-            console.log(value)
-        }
-        const candidate = await User.findOne({
-            where:{[Op.or]:condition}
-        })
-        if(candidate) {
-            return next(ApiError.badRequest('Пользователь с такой почтой или телефоном уже существует'))
+        if(!(passport || surname || name || lastname || login || passwd || passwdAgain || position || birthday || role)) {
+            res.status(401).json({message:'Введите все поля'})
         }
         if(!passwdAgain){
             return next(ApiError.badRequest("Повторно введите ваш пароль"))
         }
+        if(passwd!==passwdAgain){
+            res.status(403).json({message:'Пароли не совпадают'})
+        }
+        const candidate = await User.findOne({
+            where:{passport}
+        })
+        if(candidate) {
+            return next(ApiError.badRequest('Пользователь с таким номером паспортом уже существует'))
+        }
         if(passwd == passwdAgain){
             const hashpasswd = await bcrypt.hash(passwd,5)
             const user = await User.create({
-                name,
-                email,
-                phone,
-                passwd:hashpasswd,
-                role})
-            const token = generateJwt(user.id_user,user.name,user.email,user.phone,user.role)
+                passport, surname, name, lastname, login, passwd: hashpasswd, position, birthday, role })
+            const token = generateJwt(user.id,user.passport,user.login,user.surname,user.name)
             return res.status(200).json({token})
         }
-        else res.status(200).json({message:"Пароли не совпадают"})
-        //return next(ApiError.badRequest('Пароли не совпадают'))
-        
+        else return next(ApiError.badRequest('Пароли не совпадают'))
     }
 
     async login(req,res,next){
-        const {s_email:email,s_phone:phone,s_passwd:passwd} = req.body
-        if(!(email||phone)){
-            res.status(401).json({message:'Введите эл.почту/телефон'})            
-            //return next(ApiError.badRequest('Введите эл.почту / телефон и пароль'))
+        const {login, passwd} = req.body
+        
+        if(!(login || passwd)){
+            res.status(401).json({message:'Введите логин и пароль'})
             return
             }
         if(!passwd){
-            res.status(402).json({message:'Введите пароль'})            
-            //return next(ApiError.badRequest('Введите эл.почту / телефон и пароль'))
+            res.status(402).json({message:'Введите пароль'})
             return
         }
         const obj={email,phone} //объект для динамического условия из-за возможности не вводить почту или телефон
@@ -89,17 +58,19 @@ class AuthController{
         condition = Object.entries(obj).reduce((accum,[key,value])=>{ //запись в accum пар [key,value]
             if(value) { //запись значений не являющихся undefined или null
                 accum[key]=value
+                console.log(typeof(accum))
+                console.log(key)
+                console.log(accum[key])
+                console.log(value)
             }
-            return accum
         },{}) //используем объект как первичное значение accum
         console.log(condition)
 
         const user = await User.findOne({
-            where:{[Op.or]:condition}
+            where:{login}
         })
         if(!user){
-            res.status(403).json({message:'Введен неверный email/телефон или нет учётной записи'})
-            //return next(ApiError.internal('Введен неверный email/телефон или нет учётной записи'))
+            res.status(403).json({message:'Введен неверный логин или нет такого логина'})
             return
         }
 
@@ -111,7 +82,7 @@ class AuthController{
             return
         }
         
-        const token = generateJwt(user.id_user,user.name, user.email, user.phone, user.role)
+        const token = generateJwt(user.id,user.passport,user.login,user.surname,user.name)
         return res.status(200).json({token})
     }
 
@@ -119,6 +90,38 @@ class AuthController{
         const token = generateJwt(req.user.id_user,req.user.name, req.user.email, req.user.phone, req.user.role)
         if(token) res.status(200).json({message:"ALL RIGHT"})
     }
+
+    async get_due_id(req,res,next){
+        const person = await User.findOne({where:{id:req.params.id}})
+        if(person) req.status(400).json({person})
+        else res.status(401).json({message:`Пользователь с id = ${req.params.id} отсутствует`})
+    }
+    async get_due_login(req,res,next){
+        const person = await User.findOne({where:{login:req.params.login}})
+        if(person) req.status(400).json({person})
+        else res.status(401).json({message:`Пользователь с логином ${req.params.login} отсутствует`})
+    }
+    async get_due_passport(req,res,next){
+        const found = await User.findAll({where:{login:req.params.passport}})
+        if(person) req.status(400).json({found})
+        else res.status(401).json({message:`Пользователи с номер пасспорта = ${req.params.login} отсутствуют`})
+    }
+    async get_all(req,res,next){
+        const all = await User.findAll()
+        res.json(all)
+    }
+    async edit_due_id(req,res,next){
+        let value = JSON.parse(req.body)
+        try{
+            await User.update({value},{where:{id:req.params.id}})
+        }
+        catch(e){
+            req.next(ApiError.internal(e))
+        }
+    }
+    async destroy_due_id(req,res,next){
+        await User.destroy({where:{id:req.params.id}}).then(response => res.send(response))
+    }
 }
 
-module.exports = new AuthController()
+module.exports = new Person()

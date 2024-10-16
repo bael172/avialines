@@ -2,7 +2,7 @@ const {Passenger} = require("../db/tables.js")
 const sequelize = require("sequelize")
 const {Op} = require("sequelize")
 
-class Passenger{
+class Passajir{
     async add(req,res,next){
         if((req.body).entries.length==0) res.status(401).send("Добавьте свойства в запрос")
         const {id, passport : req_passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
@@ -42,11 +42,10 @@ class Passenger{
         }
     async get_due_id(req,res,next){
         const passenger = await Passenger.findOne({where:{id:req.params.id}})
-        if(passenger == null) res.status(401).json({message:"Пассажир с таким id не найден"})
+        if(passenger == null) res.status(401).json({message:`Пассажир с id = ${req.params.id} не найден`})
         else res.json(passenger)
     }
     async get_due_body(req,res,next){
-        const {id, passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
         const condition = []
         const body = JSON.parse(req.body)
         for(let i=0; i<Object.keys(body); i++){
@@ -58,7 +57,7 @@ class Passenger{
         } 
         else res.json(found)
     }
-    async getAll(req,res,next){
+    async get_all(req,res,next){
         const all = await Passenger.findAll()
         res.json(all)
     }
@@ -66,8 +65,7 @@ class Passenger{
         await Passenger.destroy({
             where:{id:req.params.id}
         }).then(response => req.send(response))
-
     }
-
 }
+module.exports = new Passajir()
 

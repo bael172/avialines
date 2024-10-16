@@ -6,7 +6,6 @@ const crew = require("../queries/crew")
 router.post("/add",crew)
 
 router.patch("/edit/due_id/:id",crew)
-router.patch("/edit/due_body",crew)
 
 router.get("/get/due_id/:id",crew) 
 router.get("/get/due_body",crew)
