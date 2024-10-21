@@ -126,11 +126,13 @@ const User = sequelize.define('user',
 })
 
 Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
+Flight.belongsToMany(Crew,{through:'Crew_Flight'})
 Crew.belongsToMany(Flight,{through:'Crew_Flight'})
 Flight.hasMany(Ticket, {foreignKey:'flight_number'})
 Plane.hasMany(Flight,{foreignKey:'id_plane'})
-Point.hasMany(Flight,{foreignKey:['departure_point_id','destination_point_id']})
+Point.hasMany(Flight)
 
+//{foreignKey:['departure_point_id','destination_point_id']}
 module.exports = {
     Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane, User
 }

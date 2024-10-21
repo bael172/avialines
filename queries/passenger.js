@@ -20,37 +20,39 @@ class Passajir{
         */
         const {passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
         const amigo = await Passenger.findOne({where:{passport}})
-        if(amigo == null){
+        if(!amigo){
             await Passenger.create({passport,surname,name,lastname,birthday,country_origin,citizen_of}).then(response => res.json(response))
         }
         else res.status(401).json({message:"Пассажир с таким паспортом уже существует"})
     }
     async edit_due_id(req,res,next){
         const {id, passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
-        await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
-            where:{
-                id:req.params.id
-            }
-        })
-        await Passenger.findByPk(req.params.id).then(response => res.json(response))
+        const person = await Passenger.findByPk(req.params.id).then(response => res.json(response))
+        if(person){
+            await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
+                where:{id:req.params.id}})
+            await Passenger.findByPk(req.params.id).then(response => res.json(response))
+        }
+        else res.status(401).json({message:`Пользователь с id = ${req.params.id} отсутствует`})
     }
     async edit_due_passport(req,res,next){
         const {id, passport, surname, name, lastname, birthday, country_origin, citizen_of} = req.body
-        await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
-            where:{
-                passport:req.params.passport
-            }
-        })
-        await Passenger.findOne({where:{passport:req.params.passport}}).then(response => res.json(response))
+        const person = await Passenger.findByPk(req.params.id).then(response => res.json(response))
+        if(person){
+            await Passenger.update({id, passport, surname, name, lastname, birthday, country_origin, citizen_of},{
+                where:{id:req.params.id}})
+            await Passenger.findByPk(req.params.passport).then(response => res.json(response))
+        }
+        else res.status(401).json({message:`Пользователь с passport = ${req.params.passport} отсутствует`})
     }
     async get_due_id(req,res,next){
         const passenger = await Passenger.findByPk(req.params.id)
-        if(passenger == null) res.status(401).json({message:`Пассажир с id = ${req.params.id} не найден`})
+        if(!passenger) res.status(401).json({message:`Пассажир с id = ${req.params.id} не найден`})
         else res.json(passenger)
     }
     async get_due_passport(req,res,next){
         const passenger = await Passenger.findOne({where:{passport:req.params.passport}})
-        if(passenger == null) res.status(401).json({message:`Пассажир с паспортом = ${req.params.passport} не найден`})
+        if(!passenger) res.status(401).json({message:`Пассажир с паспортом = ${req.params.passport} не найден`})
         else res.json(passenger)
     }
     async get_due_body(req,res,next){
@@ -72,7 +74,7 @@ class Passajir{
     async delete_due_id(req,res,next){
         const target = await Passenger.findByPk(req.params.id)
         if(!target) return res.status(400).json({message:`Записи с id = ${req.params.id} не обнаружено`})
-        await target.destroy()
+        else await target.destroy()
         .then((rowsDestroyed)=>rowsDestroyed? res.send("Удалено") : res.send("Не удалено"))
         return 
     }

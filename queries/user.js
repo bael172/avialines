@@ -18,18 +18,15 @@ class Person{
     async registration(req, res, next){
         const {passport, surname, name, lastname, login, passwd, passwdAgain, position, birthday, role} = req.body
         if(!(passport && surname && name && login && passwd && passwdAgain && position)) {
-            res.status(401).json({message:'Введите все поля'})
+            res.status(401).json({message:'Введите все обязательные поля'})
         }
         if(!passwdAgain){
             return next(ApiError.badRequest("Повторно введите ваш пароль"))
         }
-        if(passwd!==passwdAgain){
-            res.status(403).json({message:'Пароли не совпадают'})
-        }
         const candidate = await User.findOne({
             where:{[Op.or]:[{passport},{login}]}
         })
-        if(candidate!==null) {
+        if(candidate) {
             return next(ApiError.badRequest('Пользователь с таким паспортом или логином уже существует'))
         }
         if(passwd == passwdAgain){
@@ -39,7 +36,7 @@ class Person{
             const token = generateJwt(user.id,user.passport,user.login,user.surname,user.name, user.position, user.role)
             return res.status(200).json({token})
         }
-        else return next(ApiError.badRequest('Пароли не совпадают'))
+        else res.status(403).json({message:'Пароли не совпадают'})
     }
 
     async login(req,res,next){
@@ -113,8 +110,15 @@ class Person{
     async edit_due_id(req,res,next){
         try{
             const {passport, login, surname, name, lastname, position, role} = req.body
-            await User.update({passport, login, surname, name, lastname, position, role},{where:{id:req.params.id}})
-            await User.findByPk(req.params.id).then(response => res.json(response))
+            if (req.user.id = req.params.id){
+                const person = await User.findByPk(req.params.id).then(response => res.json(response))
+                if(person){
+                    await User.update({passport, login, surname, name, lastname, position, role},{where:{id:req.params.id}})
+                    await User.findByPk(req.params.id).then(response => res.json(response))
+                }
+                else res.status(404).json({message:`Пользователь с id = ${req.params.id} не найден`})
+            }
+            else res.status(404).json({message:"Вы вторгаетесь в чужой аккаунт"})
         }
         catch(e){
             res.next(ApiError.internal(e))
@@ -125,9 +129,12 @@ class Person{
         if(passwd !== passwdAgain){
             res.status(400).json({message:"Пароли не совпадают"})
         }
-        const hashpasswd = await bcrypt.hash(passwd,5)
-        await User.update({passwd:hashpasswd},{where:{login:req.params.login}})
-        await User.findOne({where:{login}}).then(response => res.json(response))
+        if(req.body.login == req.user.login){
+            const hashpasswd = await bcrypt.hash(passwd,5)
+            await User.update({passwd:hashpasswd},{where:{login:req.params.login}})
+            await User.findOne({where:{login}}).then(response => res.json(response))
+        }
+        else res.status(404).json({message:"Вы вторгаетесь в чужой аккаунт"})
     }
     async delete_due_id(req,res,next){
         const target = await User.findByPk(req.params.id)
