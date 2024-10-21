@@ -8,7 +8,7 @@ router.post("/add",flight)
 router.patch("/edit/due_flight_number/:flight_number",flight)
 
 router.get("/get/due_flight_number/:flight_number",flight)
-router.get("/get/due_body",flight)
+router.get("/get/due_id_plane/:id_plane",flight)
 router.get("/getAll",flight)
 
 router.delete("/delete/due_flight_number/:flight_number",flight)
