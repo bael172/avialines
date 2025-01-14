@@ -1,6 +1,37 @@
 const {Sequelize , DataTypes, Model} = require('sequelize')
 const sequelize = require('./db_connect')
 
+const User = sequelize.define('user',
+    {
+        id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+        login:{type:DataTypes.STRING, allowNull:false, unique:true},
+        passwd:{type:DataTypes.STRING, allowNull:false},
+        surname:{type:DataTypes.STRING},
+        name:{type:DataTypes.STRING},
+        lastname:{type:DataTypes.STRING},
+        passport:{type:DataTypes.STRING, allowNull:false},
+        role:{type:DataTypes.STRING, defaultValue:"worker"},
+        position:{type:DataTypes.STRING},
+        birthday:{type:DataTypes.DATE},
+    })
+
+const Plane = sequelize.define('plane',
+    {
+        id:{type:DataTypes.INTEGER,primaryKey:true}, //бортовой номер | номер гос.регистрации | идентификационный номер
+        serial:{type:DataTypes.STRING, primaryKey:true}, //серийный номер производителя
+        type:{type:DataTypes.STRING}, //Boeing, Airbus
+        name:{type:DataTypes.STRING, unique:true}, //Starfish, Jet370, VH-420,
+        seats_number:{type:DataTypes.INTEGER,allowNull:false},
+        classes:{type:DataTypes.STRING,defaultValue:"econom"},
+        airline:{type:DataTypes.STRING}, //Qatar, Turkish, Russian
+        entries_number:{type:DataTypes.INTEGER,allowNull:false},
+        crew_member_number:{type:DataTypes.INTEGER},
+        laggage_capacity:{type:DataTypes.INTEGER},
+        fueltank_capacity:{type:DataTypes.INTEGER},
+        current_fuel_level:{type:DataTypes.INTEGER},
+        status:{type:DataTypes.STRING}
+    })
+
 const Passenger = sequelize.define('passenger',
 {
     id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
@@ -11,23 +42,6 @@ const Passenger = sequelize.define('passenger',
     birthday:{type:DataTypes.STRING,},
     country_origin:{type:DataTypes.STRING, allowNull:false},
     citizen_of:{type:DataTypes.STRING, allowNull:false}
-})
-
-const Ticket = sequelize.define('ticket',
-{
-    id_ticket:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    flight_number:{type:DataTypes.STRING, allowNull:false, references:{
-        model:'flights',
-        key:'flight_number'
-    }},
-    id_passenger:{type:DataTypes.INTEGER, allowNull:false, references:{
-        model:'passengers',
-        key:'id'
-    }},
-    seat:{type:DataTypes.STRING},
-    luggage_places:{type:DataTypes.INTEGER},
-    luggage_weight_kg:{type:DataTypes.INTEGER},
-    ticket_cost:{type:DataTypes.INTEGER,allowNull:false}
 })
 
 const Crew = sequelize.define('crew',
@@ -45,9 +59,10 @@ const Crew = sequelize.define('crew',
 const Point = sequelize.define('point',
 {
     point_id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    name:{type:DataTypes.STRING, unique:true},
-    country:{type:DataTypes.STRING},
-    airport:{type:DataTypes.STRING},
+    name:{type:DataTypes.STRING, allowNull:false},
+    region:{type:DataTypes.STRING},
+    country:{type:DataTypes.STRING,allowNull:false},
+    airport:{type:DataTypes.STRING,allowNull:false},
 }
 )
 
@@ -59,7 +74,6 @@ const Flight = sequelize.define('flight',
         key:'id'
     }},
     ticket_reg_time:{type:DataTypes.TIME},
-
     boarding_start:{type:DataTypes.TIME},
     boarding_end:{type:DataTypes.TIME},
 
@@ -83,6 +97,23 @@ const Flight = sequelize.define('flight',
     status:{type:DataTypes.STRING}
 })
 
+const Ticket = sequelize.define('ticket',
+    {
+        id_ticket:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+        flight_number:{type:DataTypes.STRING, allowNull:false, references:{
+            model:'flights',
+            key:'flight_number'
+        }},
+        id_passenger:{type:DataTypes.INTEGER, allowNull:false, references:{
+            model:'passengers',
+            key:'id'
+        }},
+        seat:{type:DataTypes.STRING},
+        luggage_places:{type:DataTypes.INTEGER},
+        luggage_weight_kg:{type:DataTypes.INTEGER},
+        ticket_cost:{type:DataTypes.INTEGER,allowNull:false}
+    })
+
 const Crew_Flight = sequelize.define('crew_flight',
 {
     flight_number:{type:DataTypes.STRING, primaryKey:true, references:{
@@ -95,40 +126,18 @@ const Crew_Flight = sequelize.define('crew_flight',
     }}
 })
 
-const Plane = sequelize.define('plane',
-{
-    id:{type:DataTypes.INTEGER, primaryKey:true},
-    type:{type:DataTypes.STRING},
-    name:{type:DataTypes.STRING, allowNull:false, unique:true}, 
-    seats_number:{type:DataTypes.INTEGER,allowNull:false},
-    classes:{type:DataTypes.STRING,defaultValue:"econom"},
-    airline:{type:DataTypes.STRING},
-    toilets_number:{type:DataTypes.INTEGER,allowNull:false},
-    entries_number:{type:DataTypes.INTEGER,allowNull:false},
-    laggage_capacity:{type:DataTypes.INTEGER,allowNull:false},
-    fueltank_capacity:{type:DataTypes.INTEGER,allowNull:false},
-    current_fuel_level:{type:DataTypes.INTEGER},
-    status:{type:DataTypes.STRING}
-})
+//belongsToMany рекомендуется для связи многие ко многим с промежуточной таблицей чем hasMany 2 раза
+//belongsToMany сам создаёт промежуточную таблицу и создаёт в ней внешние ключи которые ссылаются на первичные ключи таблиц
+//Если не указать foreignKey то внешний ключ создастся автоматически что и произошло в Flight (создался 3-ий внешний ключ pointPointId)
 
-const User = sequelize.define('user',
-{
-    id:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
-    login:{type:DataTypes.STRING, allowNull:false, unique:true},
-    surname:{type:DataTypes.STRING},
-    name:{type:DataTypes.STRING},
-    lastname:{type:DataTypes.STRING},
-    passport:{type:DataTypes.STRING, allowNull:false},
-    role:{type:DataTypes.STRING, defaultValue:"worker"},
-    position:{type:DataTypes.STRING},
-    birthday:{type:DataTypes.DATE},
-    passwd:{type:DataTypes.STRING, allowNull:false},
-})
+//Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
+//Flight.hasMany(Ticket,{foreignKey:'flight_number'})
+Passenger.belongsToMany(Flight,{through:'Ticket'})
 
-Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
-Flight.belongsToMany(Crew,{through:'Crew_Flight'})
+//Crew.hasMany(Crew_Flight,{foreignKey:'employee_id'})
+//Flight.hasMany(Crew_Flight,{foreignKey:'flight_number'})
 Crew.belongsToMany(Flight,{through:'Crew_Flight'})
-Flight.hasMany(Ticket, {foreignKey:'flight_number'})
+
 Plane.hasMany(Flight,{foreignKey:'id_plane'})
 Point.hasMany(Flight)
 

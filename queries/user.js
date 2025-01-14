@@ -125,16 +125,16 @@ class Person{
         }
     }
     async change_passwd(req,res,next){
-        const {passwd, passwdAgain} = req.body
+        const {login, passwd, passwdAgain} = req.body
         if(passwd !== passwdAgain){
             res.status(400).json({message:"Пароли не совпадают"})
         }
-        if(req.body.login == req.user.login){
+        if(login == req.user.login){
             const hashpasswd = await bcrypt.hash(passwd,5)
-            await User.update({passwd:hashpasswd},{where:{login:req.params.login}})
+            await User.update({passwd:hashpasswd},{where:{login}})
             await User.findOne({where:{login}}).then(response => res.json(response))
         }
-        else res.status(404).json({message:"Вы вторгаетесь в чужой аккаунт"})
+        else res.status(500).json({message:"Вы вторгаетесь в чужой аккаунт"})
     }
     async delete_due_id(req,res,next){
         const target = await User.findByPk(req.params.id)
