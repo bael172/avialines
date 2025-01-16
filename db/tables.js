@@ -18,7 +18,7 @@ const User = sequelize.define('user',
 const Plane = sequelize.define('plane',
     {
         id:{type:DataTypes.INTEGER,primaryKey:true}, //бортовой номер | номер гос.регистрации | идентификационный номер
-        serial:{type:DataTypes.STRING, primaryKey:true}, //серийный номер производителя
+        serial:{type:DataTypes.STRING, unique:true}, //серийный номер производителя
         type:{type:DataTypes.STRING}, //Boeing, Airbus
         name:{type:DataTypes.STRING, unique:true}, //Starfish, Jet370, VH-420,
         seats_number:{type:DataTypes.INTEGER,allowNull:false},
@@ -100,6 +100,7 @@ const Flight = sequelize.define('flight',
 const Ticket = sequelize.define('ticket',
     {
         id_ticket:{type:DataTypes.INTEGER, primaryKey:true, autoIncrement:true},
+        /*
         flight_number:{type:DataTypes.STRING, allowNull:false, references:{
             model:'flights',
             key:'flight_number'
@@ -108,12 +109,14 @@ const Ticket = sequelize.define('ticket',
             model:'passengers',
             key:'id'
         }},
+        */ 
+       //belongsToMany позабодится о добавлении внешних ключей
         seat:{type:DataTypes.STRING},
         luggage_places:{type:DataTypes.INTEGER},
         luggage_weight_kg:{type:DataTypes.INTEGER},
         ticket_cost:{type:DataTypes.INTEGER,allowNull:false}
     })
-
+/*
 const Crew_Flight = sequelize.define('crew_flight',
 {
     flight_number:{type:DataTypes.STRING, primaryKey:true, references:{
@@ -125,23 +128,31 @@ const Crew_Flight = sequelize.define('crew_flight',
         key:'employee_id'
     }}
 })
+*/
+    //Убираем определение промежуточной таблицы т.к. она содержит только внешние ключи
+    // а это целесообразней сделать с помощью belongsToMany
 
 //belongsToMany рекомендуется для связи многие ко многим с промежуточной таблицей чем hasMany 2 раза
 //belongsToMany сам создаёт промежуточную таблицу и создаёт в ней внешние ключи которые ссылаются на первичные ключи таблиц
 //Если не указать foreignKey то внешний ключ создастся автоматически что и произошло в Flight (создался 3-ий внешний ключ pointPointId)
 
+//belongsToMany соразмерно и лучше чем запись hasMany от обоих таблиц к промежуточной таблице
+
 //Passenger.hasMany(Ticket, {foreignKey:'id_passenger'})
 //Flight.hasMany(Ticket,{foreignKey:'flight_number'})
-Passenger.belongsToMany(Flight,{through:'Ticket'})
+Passenger.belongsToMany(Flight,{through:'ticket'})  //Убираем промежуточную таблицу Ticket т.к. она не содержит ничего кроме внешних ключей (нам нужны атрибуты билета: цена, место посадки)
 
 //Crew.hasMany(Crew_Flight,{foreignKey:'employee_id'})
 //Flight.hasMany(Crew_Flight,{foreignKey:'flight_number'})
-Crew.belongsToMany(Flight,{through:'Crew_Flight'})
+Crew.belongsToMany(Flight,{through:'crew_flight'})
+//Внешние ключи: crewEmployeeId, flightFlightNumber
 
 Plane.hasMany(Flight,{foreignKey:'id_plane'})
-Point.hasMany(Flight)
 
-//{foreignKey:['departure_point_id','destination_point_id']}
+Flight.belongsTo(Point,{foreignKey:'departure_point_id', as:'departure'})
+Flight.belongsTo(Point,{foreignKey:'destination_point_id', as:'destination'})
+
+//{}
 module.exports = {
-    Passenger, Ticket, Crew, Point, Flight, Crew_Flight, Plane, User
+    Passenger, Ticket, Crew, Point, Flight, Plane, User,
 }

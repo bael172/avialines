@@ -1,9 +1,9 @@
 const {Plane} = require("../db/tables")
 const {Op} = require("sequelize")
 const ApiError = require("../apiError")
-class Plane{
+class Samolet{
     async add(req,res,next){
-        const {serial,id,type,name,seats_number,classes,airline,
+        const {id,serial,type,name,seats_number,classes,airline,
             crew_member_number, luggage_capacity,
             fueltank_capacity, current_fuel_level, status
         } = req.body
@@ -22,13 +22,13 @@ class Plane{
         }
     } 
     async update_due_id(req,res,next){
-        const {serial, type, name, seats_number, classes, airline,
+        const {id, serial, type, name, seats_number, classes, airline,
             crew_member_number, luggage_capacity, fueltank_capacity,
             current_fuel_level, status
         } = req.body
         const due_id = await Plane.findOne({where:{id:req.params.id}})
         if(!due_id) res.send("Самолёт с id=",req.params.id," не найден")
-        await due_id.update({type,name,seats_number,classes,airline,
+        await due_id.update({id,serial,type,name,seats_number,classes,airline,
            crew_member_number, luggage_capacity, fueltank_capacity,
            current_fuel_level, status
         })
@@ -36,13 +36,13 @@ class Plane{
         res.json(result)
     }
     async update_due_serial(req,res,next){
-        const {id, type, name, seats_number, classes, airline,
+        const {id, serial, type, name, seats_number, classes, airline,
             crew_member_number, luggage_capacity, fueltank_capacity,
             current_fuel_level, status
         } = req.body
         const due_serial = await Plane.findOne({where:{serial:req.params.serial}})
         if(!due_serial) res.send("Самолёт с серийником=",req.params.serial," не найден")
-        await due_serial.update({type,name,seats_number,classes,airline,
+        await due_serial.update({id,serial,type,name,seats_number,classes,airline,
            crew_member_number, luggage_capacity, fueltank_capacity,
            current_fuel_level, status
         })
@@ -87,4 +87,4 @@ class Plane{
         }
     }
 }
-module.exports = new Plane()
+module.exports = new Samolet()

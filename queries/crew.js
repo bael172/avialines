@@ -29,12 +29,12 @@ class Crew_Person{
     }
     async get_due_id(req,res,next){
         const person = await Crew.findByPk(req.params.id)
-        if(!person) next(ApiError.internal(`Пользователя с id=${req.params.id} нет`))
+        if(!person) res.next(ApiError.internal(`Пользователя с id=${req.params.id} нет`))
         res.json(person)
     }
     async get_due_passport(req,res,next){
         const person = await Crew.findOne({where:{passport:req.params.passport}})
-        if(!person) next(ApiError.internal(`Пользователя с номером паспорта=${req.params.passport} нет`))
+        if(!person) res.next(ApiError.internal(`Пользователя с номером паспорта=${req.params.passport} нет`))
         res.json(person)
     }
     async get_all(req,res,next){
